@@ -308,12 +308,13 @@ stats = summary_stats(df)
 # TABS
 # =============================
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Dashboard",
     "➕ Dodaj zakład",
     "📋 Historia",
     "📈 Statystyki",
-    "🧮 Kalkulator"
+    "🧮 Kalkulator",
+    "🤖 FS Tips"
 ])
 
 # =============================
