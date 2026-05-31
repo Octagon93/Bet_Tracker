@@ -655,3 +655,77 @@ with tab5:
         <div class="big-number">CHF{stake_needed:.2f}</div>
     </div>
     """, unsafe_allow_html=True)
+# =============================
+# FS TIPS ANALYTICS
+# =============================
+
+with tab6:
+    st.header("🤖 FS Tips Analytics")
+
+    fs_df = df[df["Liga"] == "FS TIPS"].copy()
+
+    if fs_df.empty:
+        st.info("Brak typów FS TIPS.")
+    else:
+        settled_fs = fs_df[fs_df["Wynik"].isin(["WIN", "LOSS", "PUSH"])]
+
+        fs_profit = settled_fs["Profit"].sum()
+        fs_stake = settled_fs["Stawka"].sum()
+        fs_bets = len(settled_fs)
+        fs_wins = len(settled_fs[settled_fs["Wynik"] == "WIN"])
+        fs_losses = len(settled_fs[settled_fs["Wynik"] == "LOSS"])
+        fs_wait = len(fs_df[fs_df["Wynik"] == "WAIT"])
+
+        fs_win_rate = (fs_wins / fs_bets * 100) if fs_bets else 0
+        fs_yield = (fs_profit / fs_stake * 100) if fs_stake else 0
+        fs_avg_odds = settled_fs["Kurs"].mean() if fs_bets else 0
+
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div style="font-size:34px;">🤖</div>
+                <p class="subtitle">Typy rozliczone</p>
+                <div class="big-number">{fs_bets}</div>
+                <p class="subtitle">WAIT: {fs_wait}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with c2:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div style="font-size:34px;">💰</div>
+                <p class="subtitle">Profit FS Tips</p>
+                <div class="big-number {profit_class(fs_profit)}">CHF{fs_profit:.2f}</div>
+                <p class="subtitle">Suma stawek: CHF{fs_stake:.2f}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with c3:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div style="font-size:34px;">🎯</div>
+                <p class="subtitle">Win Rate</p>
+                <div class="big-number">{fs_win_rate:.1f}%</div>
+                <p class="subtitle">{fs_wins} WIN / {fs_losses} LOSS</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with c4:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div style="font-size:34px;">📈</div>
+                <p class="subtitle">Yield FS Tips</p>
+                <div class="big-number {profit_class(fs_yield)}">{fs_yield:.1f}%</div>
+                <p class="subtitle">Śr. kurs: {fs_avg_odds:.2f}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("### 📋 Historia FS Tips")
+
+        st.dataframe(
+            fs_df[["Data", "Selekcja", "Kurs", "Stawka", "Wynik", "Profit", "Bankroll", "Notatka"]],
+            use_container_width=True,
+            hide_index=True
+        )
