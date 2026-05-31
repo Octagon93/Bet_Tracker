@@ -321,56 +321,122 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # =============================
 
 with tab1:
+    st.markdown("""
+    <div class="hero-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:30px;">
+            <div>
+                <h1>⚽ Bet Tracker Dashboard</h1>
+                <p class="subtitle">Bankroll · Profit · ROI · Win Rate · Ostatnie typy</p>
+            </div>
+            <div style="font-size:70px;">🏟️</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         st.markdown(f"""
         <div class="metric-card">
+            <div style="font-size:38px;">💼</div>
             <p class="subtitle">Bankroll aktualny</p>
             <div class="big-number">CHF{stats['bankroll']:.2f}</div>
+            <p class="subtitle">Start: CHF{START_BANKROLL:.2f}</p>
         </div>
         """, unsafe_allow_html=True)
 
     with col2:
         st.markdown(f"""
         <div class="metric-card">
+            <div style="font-size:38px;">📈</div>
             <p class="subtitle">Profit</p>
             <div class="big-number {profit_class(stats['profit'])}">CHF{stats['profit']:.2f}</div>
+            <p class="subtitle">Profit skumulowany</p>
         </div>
         """, unsafe_allow_html=True)
 
     with col3:
         st.markdown(f"""
         <div class="metric-card">
+            <div style="font-size:38px;">🎯</div>
             <p class="subtitle">Yield / ROI</p>
             <div class="big-number {profit_class(stats['yield'])}">{stats['yield']:.1f}%</div>
+            <p class="subtitle">Zwrot z postawionych stawek</p>
         </div>
         """, unsafe_allow_html=True)
 
     with col4:
         st.markdown(f"""
         <div class="metric-card">
+            <div style="font-size:38px;">🏆</div>
             <p class="subtitle">Win Rate</p>
             <div class="big-number">{stats['win_rate']:.1f}%</div>
+            <p class="subtitle">{stats['wins']} WIN / {stats['losses']} LOSS</p>
         </div>
         """, unsafe_allow_html=True)
 
-    st.divider()
+    st.markdown("<br>", unsafe_allow_html=True)
 
     if not df.empty:
-        col_a, col_b = st.columns(2)
+        col_a, col_b = st.columns([1.25, 1])
 
         with col_a:
-            fig = px.line(df, x=df.index, y="Bankroll", title="Wzrost bankrolla")
-            fig.update_layout(template="plotly_dark", height=420)
+            fig = px.line(
+                df,
+                x=df.index,
+                y="Bankroll",
+                title="📈 Wzrost bankrolla",
+                markers=True
+            )
+            fig.update_layout(
+                template="plotly_dark",
+                height=430,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(15,23,42,0.85)",
+                font=dict(color="#E2E8F0"),
+                title_font=dict(size=22),
+            )
+            fig.update_traces(line=dict(width=4))
             st.plotly_chart(fig, use_container_width=True)
 
         with col_b:
-            fig2 = px.line(df, x=df.index, y="Profit skumulowany", title="Profit skumulowany")
-            fig2.update_layout(template="plotly_dark", height=420)
-            st.plotly_chart(fig2, use_container_width=True)
+            settled = df[df["Wynik"].isin(["WIN", "LOSS", "PUSH", "WAIT"])]
+
+            result_counts = settled["Wynik"].value_counts().reset_index()
+            result_counts.columns = ["Wynik", "Liczba"]
+
+            fig_pie = px.pie(
+                result_counts,
+                names="Wynik",
+                values="Liczba",
+                hole=0.55,
+                title="🎯 Podsumowanie wyników"
+            )
+            fig_pie.update_layout(
+                template="plotly_dark",
+                height=430,
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#E2E8F0"),
+                title_font=dict(size=22),
+            )
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+        st.markdown("### 🧾 Ostatnie typy")
+
+        last_bets = df.tail(8).copy()
+        st.dataframe(
+            last_bets[["Data", "Liga", "Selekcja", "Kurs", "Stawka", "Wynik", "Profit", "Bankroll"]],
+            use_container_width=True,
+            hide_index=True
+        )
+
     else:
-        st.info("Brak zakładów. Dodaj pierwszy zakład w zakładce ➕ Dodaj zakład.")
+        st.markdown("""
+        <div class="metric-card">
+            <h3>Brak danych</h3>
+            <p class="subtitle">Dodaj pierwszy zakład albo pobierz typ z FS TIPS.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # =============================
 # ADD BET
