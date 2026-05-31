@@ -84,6 +84,33 @@ def fetch_fstips_tip():
 
 st.markdown("""
 <style>
+div[data-testid="stTabs"] {
+    background: rgba(15,23,42,0.55);
+    padding: 10px;
+    border-radius: 18px;
+    border: 1px solid #334155;
+}
+
+button[data-baseweb="tab"] {
+    background: #1E293B !important;
+    border: 1px solid #475569 !important;
+    border-radius: 14px 14px 0 0 !important;
+    padding: 12px 22px !important;
+    color: #E2E8F0 !important;
+    font-weight: 800 !important;
+    margin-right: 8px !important;
+}
+
+button[data-baseweb="tab"]:hover {
+    background: #334155 !important;
+    color: white !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    background: linear-gradient(90deg, #22C55E, #16A34A) !important;
+    color: white !important;
+    border-bottom: 4px solid #EF4444 !important;
+}
     .stApp {
         background: linear-gradient(135deg, #06121F 0%, #0B1F33 45%, #07111F 100%);
         color: #F8FAFC;
