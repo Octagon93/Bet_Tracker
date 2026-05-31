@@ -395,14 +395,45 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # =============================
 
 with tab1:
-    st.markdown("""
-    <div class="hero-card">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:30px;">
+    st.markdown(f"""
+    <div class="dashboard-pro-hero">
+        <div class="dashboard-pro-grid">
             <div>
-                <h1>⚽ Bet Tracker Dashboard</h1>
-                <p class="subtitle">Bankroll · Profit · ROI · Win Rate · Ostatnie typy</p>
+                <div class="dashboard-pro-title">⚽ Bet Tracker PRO</div>
+                <div class="dashboard-pro-subtitle">
+                    Live bankroll tracking · ROI/Yield · Win Rate · FS Tips automation
+                </div>
+
+                <div class="dashboard-pro-badges">
+                    <div class="dashboard-badge">💼 Bankroll Management</div>
+                    <div class="dashboard-badge">🎯 Value Bets</div>
+                    <div class="dashboard-badge">📈 ROI / Yield</div>
+                    <div class="dashboard-badge">🤖 Auto FS Tips</div>
+                </div>
             </div>
-            <div style="font-size:70px;">🏟️</div>
+
+            <div class="dashboard-live-panel">
+                <div class="dashboard-live-row">
+                    <span>Bankroll</span>
+                    <span class="dashboard-live-value-green">CHF{stats['bankroll']:.2f}</span>
+                </div>
+                <div class="dashboard-live-row">
+                    <span>Profit</span>
+                    <span class="dashboard-live-value-green">CHF{stats['profit']:.2f}</span>
+                </div>
+                <div class="dashboard-live-row">
+                    <span>Yield / ROI</span>
+                    <span class="dashboard-live-value-white">{stats['yield']:.1f}%</span>
+                </div>
+                <div class="dashboard-live-row">
+                    <span>Win Rate</span>
+                    <span class="dashboard-live-value-white">{stats['win_rate']:.1f}%</span>
+                </div>
+                <div class="dashboard-live-row">
+                    <span>Zakłady</span>
+                    <span class="dashboard-live-value-white">{stats['bets']}</span>
+                </div>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
