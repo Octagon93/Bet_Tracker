@@ -182,6 +182,80 @@ button[data-baseweb="tab"][aria-selected="true"] {
     textarea, input, select {
         border-radius: 14px !important;
     }
+    .dashboard-pro-hero {
+    background:
+        linear-gradient(90deg, rgba(2,6,23,0.92) 0%, rgba(2,6,23,0.75) 45%, rgba(2,6,23,0.25) 100%),
+        url("https://images.unsplash.com/photo-1508098682722-e99c643e7485");
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(148,163,184,0.35);
+    border-left: 8px solid #06B6D4;
+    border-radius: 28px;
+    padding: 34px;
+    margin-bottom: 26px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+}
+
+.dashboard-pro-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 28px;
+    align-items: center;
+}
+
+.dashboard-pro-title {
+    font-size: 46px;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.dashboard-pro-subtitle {
+    color: #93C5FD;
+    font-size: 17px;
+    margin-bottom: 22px;
+}
+
+.dashboard-pro-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.dashboard-badge {
+    background: rgba(15,23,42,0.75);
+    border: 1px solid rgba(34,211,238,0.35);
+    border-radius: 14px;
+    padding: 10px 14px;
+    color: #E2E8F0;
+    font-weight: 800;
+}
+
+.dashboard-live-panel {
+    background: rgba(15,23,42,0.78);
+    border: 1px solid rgba(34,211,238,0.35);
+    border-radius: 22px;
+    padding: 22px;
+    backdrop-filter: blur(6px);
+}
+
+.dashboard-live-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(148,163,184,0.18);
+    padding: 9px 0;
+    color: #E2E8F0;
+}
+
+.dashboard-live-value-green {
+    color: #22C55E;
+    font-weight: 900;
+}
+
+.dashboard-live-value-white {
+    color: #FFFFFF;
+    font-weight: 900;
+}
 </style>
 """, unsafe_allow_html=True)
 
