@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
@@ -19,7 +20,6 @@ st.set_page_config(
 )
 
 DATA_FILE = Path("bets_data.csv")
-
 START_BANKROLL = 500.00
 
 COLUMNS = [
@@ -39,18 +39,21 @@ RESULTS = ["WAIT", "WIN", "LOSS", "PUSH"]
 SYSTEMS = ["FS TIPS", "Top Tipster", "Inny", "Value", "AKO", "Live"]
 
 # =============================
-# CSS
+# FS TIPS SCRAPER
 # =============================
 
 def fetch_fstips_tip():
     url = "https://www.footballsuper.tips/football-accumulators-tips/football-tips-prediction-of-the-day/"
-
     headers = {"User-Agent": "Mozilla/5.0"}
 
-    r = requests.get(url, headers=headers, timeout=15)
+    try:
+        r = requests.get(url, headers=headers, timeout=15)
+        r.raise_for_status()
+    except Exception:
+        return None
+
     soup = BeautifulSoup(r.text, "html.parser")
     text = soup.get_text("\n", strip=True)
-
     lines = [line.strip() for line in text.split("\n") if line.strip()]
 
     odd_index = None
@@ -63,16 +66,13 @@ def fetch_fstips_tip():
         return None
 
     odds_match = re.search(r"Total Odd[:\s]+([0-9]+(?:\.[0-9]+)?)", lines[odd_index])
-
     if not odds_match:
         return None
 
     odds = float(odds_match.group(1))
-
     tip_line = lines[odd_index - 4]
     match_line = lines[odd_index - 2]
     league_line = lines[odd_index - 1]
-
     selection = f"{match_line} - {tip_line}"
 
     return {
@@ -82,42 +82,19 @@ def fetch_fstips_tip():
         "note": f"Auto FSTips | {league_line}"
     }
 
+# =============================
+# CSS
+# =============================
+
 st.markdown("""
 <style>
-div[data-testid="stTabs"] {
-    background: rgba(15,23,42,0.55);
-    padding: 10px;
-    border-radius: 18px;
-    border: 1px solid #334155;
-}
-
-button[data-baseweb="tab"] {
-    background: #1E293B !important;
-    border: 1px solid #475569 !important;
-    border-radius: 14px 14px 0 0 !important;
-    padding: 12px 22px !important;
-    color: #E2E8F0 !important;
-    font-weight: 800 !important;
-    margin-right: 8px !important;
-}
-
-button[data-baseweb="tab"]:hover {
-    background: #334155 !important;
-    color: white !important;
-}
-
-button[data-baseweb="tab"][aria-selected="true"] {
-    background: linear-gradient(90deg, #22C55E, #16A34A) !important;
-    color: white !important;
-    border-bottom: 4px solid #EF4444 !important;
-}
     .stApp {
         background: linear-gradient(135deg, #06121F 0%, #0B1F33 45%, #07111F 100%);
         color: #F8FAFC;
     }
 
     .block-container {
-        padding-top: 2rem;
+        padding-top: 1.4rem;
         max-width: 1600px;
     }
 
@@ -126,14 +103,32 @@ button[data-baseweb="tab"][aria-selected="true"] {
         font-weight: 900 !important;
     }
 
-    .hero-card {
-        background: linear-gradient(135deg, rgba(8, 47, 73, 0.95), rgba(15, 23, 42, 0.95));
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        border-left: 8px solid #06B6D4;
-        border-radius: 26px;
-        padding: 32px;
-        margin-bottom: 24px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    div[data-testid="stTabs"] {
+        background: rgba(15,23,42,0.55);
+        padding: 10px;
+        border-radius: 18px;
+        border: 1px solid #334155;
+    }
+
+    button[data-baseweb="tab"] {
+        background: #1E293B !important;
+        border: 1px solid #475569 !important;
+        border-radius: 14px 14px 0 0 !important;
+        padding: 12px 22px !important;
+        color: #E2E8F0 !important;
+        font-weight: 800 !important;
+        margin-right: 8px !important;
+    }
+
+    button[data-baseweb="tab"]:hover {
+        background: #334155 !important;
+        color: white !important;
+    }
+
+    button[data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(90deg, #22C55E, #16A34A) !important;
+        color: white !important;
+        border-bottom: 4px solid #EF4444 !important;
     }
 
     .metric-card {
@@ -142,6 +137,7 @@ button[data-baseweb="tab"][aria-selected="true"] {
         border-radius: 22px;
         padding: 22px;
         box-shadow: 0 14px 35px rgba(0,0,0,0.35);
+        min-height: 155px;
     }
 
     .profit-positive {
@@ -182,80 +178,12 @@ button[data-baseweb="tab"][aria-selected="true"] {
     textarea, input, select {
         border-radius: 14px !important;
     }
-    .dashboard-pro-hero {
-    background:
-        linear-gradient(90deg, rgba(2,6,23,0.92) 0%, rgba(2,6,23,0.75) 45%, rgba(2,6,23,0.25) 100%),
-        url("https://images.unsplash.com/photo-1508098682722-e99c643e7485");
-    background-size: cover;
-    background-position: center;
-    border: 1px solid rgba(148,163,184,0.35);
-    border-left: 8px solid #06B6D4;
-    border-radius: 28px;
-    padding: 34px;
-    margin-bottom: 26px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
-}
 
-.dashboard-pro-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 28px;
-    align-items: center;
-}
-
-.dashboard-pro-title {
-    font-size: 46px;
-    font-weight: 900;
-    color: white;
-    margin-bottom: 8px;
-}
-
-.dashboard-pro-subtitle {
-    color: #93C5FD;
-    font-size: 17px;
-    margin-bottom: 22px;
-}
-
-.dashboard-pro-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.dashboard-badge {
-    background: rgba(15,23,42,0.75);
-    border: 1px solid rgba(34,211,238,0.35);
-    border-radius: 14px;
-    padding: 10px 14px;
-    color: #E2E8F0;
-    font-weight: 800;
-}
-
-.dashboard-live-panel {
-    background: rgba(15,23,42,0.78);
-    border: 1px solid rgba(34,211,238,0.35);
-    border-radius: 22px;
-    padding: 22px;
-    backdrop-filter: blur(6px);
-}
-
-.dashboard-live-row {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(148,163,184,0.18);
-    padding: 9px 0;
-    color: #E2E8F0;
-}
-
-.dashboard-live-value-green {
-    color: #22C55E;
-    font-weight: 900;
-}
-
-.dashboard-live-value-white {
-    color: #FFFFFF;
-    font-weight: 900;
-}
+    [data-testid="stDataFrame"] {
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -287,18 +215,15 @@ def calc_profit(row):
     try:
         stake = float(str(row.get("Stawka", 0)).replace(",", "."))
         odds = float(str(row.get("Kurs", 0)).replace(",", "."))
-    except:
+    except Exception:
         return 0.0
 
     if result == "WIN":
         return round((odds * stake) - stake, 2)
-
     if result == "LOSS":
         return round(-stake, 2)
-
     if result == "PUSH":
         return 0.0
-
     return 0.0
 
 
@@ -307,14 +232,19 @@ def recalc(df):
         return df
 
     df = df.copy()
+    for col in COLUMNS:
+        if col not in df.columns:
+            df[col] = ""
+
     df["Kurs"] = pd.to_numeric(df["Kurs"], errors="coerce").fillna(0)
     df["Stawka"] = pd.to_numeric(df["Stawka"], errors="coerce").fillna(0)
+    df["Wynik"] = df["Wynik"].astype(str).str.strip().str.upper()
 
     df["Profit"] = df.apply(calc_profit, axis=1)
     df["Profit skumulowany"] = df["Profit"].cumsum().round(2)
     df["Bankroll"] = (START_BANKROLL + df["Profit skumulowany"]).round(2)
 
-    return df
+    return df[COLUMNS]
 
 
 def summary_stats(df):
@@ -358,16 +288,12 @@ def summary_stats(df):
 def profit_class(value):
     return "profit-positive" if value >= 0 else "profit-negative"
 
-# =============================
-# HEADER
-# =============================
 
-st.markdown("""
-<div class="hero-card">
-    <h1>⚽ Bet Tracker — Piłka Nożna</h1>
-    <p class="subtitle">Bankroll · ROI/Yield · Win Rate · Profit skumulowany · Systemy typerskie</p>
-</div>
-""", unsafe_allow_html=True)
+def add_bet(df, new_row):
+    df_new = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    df_new = recalc(df_new)
+    save_data(df_new)
+    return df_new
 
 # =============================
 # LOAD DATA
@@ -395,48 +321,43 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # =============================
 
 with tab1:
-    st.markdown(f"""
-    <div class="dashboard-pro-hero">
-        <div class="dashboard-pro-grid">
+    components.html(f"""
+    <div style="
+        background:
+            linear-gradient(90deg, rgba(2,6,23,0.94), rgba(2,6,23,0.72), rgba(2,6,23,0.25)),
+            url('https://images.unsplash.com/photo-1508098682722-e99c643e7485');
+        background-size: cover;
+        background-position: center;
+        border-left: 8px solid #06B6D4;
+        border-radius: 28px;
+        padding: 34px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+        font-family: Arial;
+    ">
+        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:28px; align-items:center;">
             <div>
-                <div class="dashboard-pro-title">⚽ Bet Tracker PRO</div>
-                <div class="dashboard-pro-subtitle">
+                <div style="font-size:46px; font-weight:900; color:white;">⚽ Bet Tracker PRO</div>
+                <div style="color:#93C5FD; font-size:17px; margin:8px 0 22px;">
                     Live bankroll tracking · ROI/Yield · Win Rate · FS Tips automation
                 </div>
-
-                <div class="dashboard-pro-badges">
-                    <div class="dashboard-badge">💼 Bankroll Management</div>
-                    <div class="dashboard-badge">🎯 Value Bets</div>
-                    <div class="dashboard-badge">📈 ROI / Yield</div>
-                    <div class="dashboard-badge">🤖 Auto FS Tips</div>
+                <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                    <span style="background:rgba(15,23,42,0.8); border:1px solid #22D3EE; border-radius:14px; padding:10px 14px; color:#E2E8F0; font-weight:800;">💼 Bankroll</span>
+                    <span style="background:rgba(15,23,42,0.8); border:1px solid #22D3EE; border-radius:14px; padding:10px 14px; color:#E2E8F0; font-weight:800;">🎯 Value Bets</span>
+                    <span style="background:rgba(15,23,42,0.8); border:1px solid #22D3EE; border-radius:14px; padding:10px 14px; color:#E2E8F0; font-weight:800;">📈 ROI</span>
+                    <span style="background:rgba(15,23,42,0.8); border:1px solid #22D3EE; border-radius:14px; padding:10px 14px; color:#E2E8F0; font-weight:800;">🤖 Auto Tips</span>
                 </div>
             </div>
 
-            <div class="dashboard-live-panel">
-                <div class="dashboard-live-row">
-                    <span>Bankroll</span>
-                    <span class="dashboard-live-value-green">CHF{stats['bankroll']:.2f}</span>
-                </div>
-                <div class="dashboard-live-row">
-                    <span>Profit</span>
-                    <span class="dashboard-live-value-green">CHF{stats['profit']:.2f}</span>
-                </div>
-                <div class="dashboard-live-row">
-                    <span>Yield / ROI</span>
-                    <span class="dashboard-live-value-white">{stats['yield']:.1f}%</span>
-                </div>
-                <div class="dashboard-live-row">
-                    <span>Win Rate</span>
-                    <span class="dashboard-live-value-white">{stats['win_rate']:.1f}%</span>
-                </div>
-                <div class="dashboard-live-row">
-                    <span>Zakłady</span>
-                    <span class="dashboard-live-value-white">{stats['bets']}</span>
-                </div>
+            <div style="background:rgba(15,23,42,0.82); border:1px solid #22D3EE; border-radius:22px; padding:22px;">
+                <div style="display:flex; justify-content:space-between; color:#E2E8F0; padding:9px 0;">Bankroll <b style="color:#22C55E;">CHF{stats['bankroll']:.2f}</b></div>
+                <div style="display:flex; justify-content:space-between; color:#E2E8F0; padding:9px 0;">Profit <b style="color:#22C55E;">CHF{stats['profit']:.2f}</b></div>
+                <div style="display:flex; justify-content:space-between; color:#E2E8F0; padding:9px 0;">Yield / ROI <b>{stats['yield']:.1f}%</b></div>
+                <div style="display:flex; justify-content:space-between; color:#E2E8F0; padding:9px 0;">Win Rate <b>{stats['win_rate']:.1f}%</b></div>
+                <div style="display:flex; justify-content:space-between; color:#E2E8F0; padding:9px 0;">Zakłady <b>{stats['bets']}</b></div>
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, height=310)
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -505,9 +426,8 @@ with tab1:
             st.plotly_chart(fig, use_container_width=True)
 
         with col_b:
-            settled = df[df["Wynik"].isin(["WIN", "LOSS", "PUSH", "WAIT"])]
-
-            result_counts = settled["Wynik"].value_counts().reset_index()
+            settled_all = df[df["Wynik"].isin(["WIN", "LOSS", "PUSH", "WAIT"])]
+            result_counts = settled_all["Wynik"].value_counts().reset_index()
             result_counts.columns = ["Wynik", "Liczba"]
 
             fig_pie = px.pie(
@@ -527,14 +447,12 @@ with tab1:
             st.plotly_chart(fig_pie, use_container_width=True)
 
         st.markdown("### 🧾 Ostatnie typy")
-
         last_bets = df.tail(8).copy()
         st.dataframe(
             last_bets[["Data", "Liga", "Selekcja", "Kurs", "Stawka", "Wynik", "Profit", "Bankroll"]],
             use_container_width=True,
             hide_index=True
         )
-
     else:
         st.markdown("""
         <div class="metric-card">
@@ -554,24 +472,30 @@ with tab2:
         tip = fetch_fstips_tip()
 
         if tip:
-            new_row = {
-                "Data": date.today().strftime("%d.%m.%Y"),
-                "Liga": tip["league"],
-                "Selekcja": tip["selection"],
-                "Kurs": tip["odds"],
-                "Stawka": 100.00,
-                "Wynik": "WAIT",
-                "Profit": 0,
-                "Profit skumulowany": 0,
-                "Bankroll": START_BANKROLL,
-                "Notatka": tip["note"]
-            }
+            today = date.today().strftime("%d.%m.%Y")
+            already_exists = (
+                (df["Data"] == today) &
+                (df["Selekcja"] == tip["selection"])
+            ).any()
 
-            df_new = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-            df_new = recalc(df_new)
-            save_data(df_new)
-
-            st.success(f"Dodano typ: {tip['selection']} @ {tip['odds']}")
+            if already_exists:
+                st.warning("Ten typ jest już dodany.")
+            else:
+                new_row = {
+                    "Data": today,
+                    "Liga": tip["league"],
+                    "Selekcja": tip["selection"],
+                    "Kurs": tip["odds"],
+                    "Stawka": 100.00,
+                    "Wynik": "WAIT",
+                    "Profit": 0,
+                    "Profit skumulowany": 0,
+                    "Bankroll": START_BANKROLL,
+                    "Notatka": tip["note"]
+                }
+                add_bet(df, new_row)
+                st.success(f"Dodano typ: {tip['selection']} @ {tip['odds']}")
+                st.rerun()
         else:
             st.error("Nie udało się pobrać typu z FS TIPS.")
 
@@ -606,11 +530,9 @@ with tab2:
                 "Bankroll": START_BANKROLL,
                 "Notatka": note
             }
-
-            df_new = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-            df_new = recalc(df_new)
-            save_data(df_new)
-            st.success("Zakład dodany. Odśwież stronę albo przejdź do historii.")
+            add_bet(df, new_row)
+            st.success("Zakład dodany.")
+            st.rerun()
 
 # =============================
 # HISTORY
@@ -646,7 +568,8 @@ with tab3:
                 edited_df = edited_df.dropna(how="all")
                 edited_df = recalc(edited_df)
                 save_data(edited_df)
-                st.success("Zapisano i przeliczono zakłady. Odśwież stronę.")
+                st.success("Zapisano i przeliczono zakłady.")
+                st.rerun()
 
         with col2:
             row_to_delete = st.number_input(
@@ -661,7 +584,8 @@ with tab3:
                 new_df = df.drop(df.index[int(row_to_delete)]).reset_index(drop=True)
                 new_df = recalc(new_df)
                 save_data(new_df)
-                st.success(f"Usunięto wiersz {row_to_delete}. Odśwież stronę.")
+                st.success(f"Usunięto wiersz {row_to_delete}.")
+                st.rerun()
 
         st.download_button(
             "📥 Pobierz CSV",
@@ -682,23 +606,26 @@ with tab4:
     else:
         settled = df[df["Wynik"].isin(["WIN", "LOSS", "PUSH"])]
 
-        by_system = settled.groupby("Liga").agg(
-            Zaklady=("Liga", "count"),
-            Profit=("Profit", "sum"),
-            Stawki=("Stawka", "sum"),
-            Sredni_kurs=("Kurs", "mean")
-        ).reset_index()
+        if settled.empty:
+            st.info("Brak rozliczonych zakładów.")
+        else:
+            by_system = settled.groupby("Liga").agg(
+                Zaklady=("Liga", "count"),
+                Profit=("Profit", "sum"),
+                Stawki=("Stawka", "sum"),
+                Sredni_kurs=("Kurs", "mean")
+            ).reset_index()
 
-        by_system["Yield %"] = (by_system["Profit"] / by_system["Stawki"] * 100).round(1)
-        by_system["Profit"] = by_system["Profit"].round(2)
-        by_system["Sredni_kurs"] = by_system["Sredni_kurs"].round(2)
+            by_system["Yield %"] = (by_system["Profit"] / by_system["Stawki"] * 100).round(1)
+            by_system["Profit"] = by_system["Profit"].round(2)
+            by_system["Sredni_kurs"] = by_system["Sredni_kurs"].round(2)
 
-        st.subheader("Podsumowanie systemów")
-        st.dataframe(by_system, use_container_width=True)
+            st.subheader("Podsumowanie systemów")
+            st.dataframe(by_system, use_container_width=True)
 
-        fig3 = px.bar(by_system, x="Liga", y="Profit", title="Profit według systemu")
-        fig3.update_layout(template="plotly_dark", height=420)
-        st.plotly_chart(fig3, use_container_width=True)
+            fig3 = px.bar(by_system, x="Liga", y="Profit", title="Profit według systemu")
+            fig3.update_layout(template="plotly_dark", height=420)
+            st.plotly_chart(fig3, use_container_width=True)
 
 # =============================
 # CALCULATOR
